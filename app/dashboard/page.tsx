@@ -185,10 +185,21 @@ export default function DashboardPage() {
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                           <div className="absolute top-2 right-2 flex space-x-1">
-                            <Button size="sm" variant="secondary" className="h-8 w-8 p-0 rounded-full bg-white/90">
-                              <Edit className="h-3 w-3" />
-                            </Button>
-                            <Button size="sm" variant="secondary" className="h-8 w-8 p-0 rounded-full bg-white/90">
+                            <Link href={`/listing/${listing.id}`}>
+                              <Button size="sm" variant="secondary" className="h-8 w-8 p-0 rounded-full bg-white/90">
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                            </Link>
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="h-8 w-8 p-0 rounded-full bg-white/90"
+                              onClick={() => {
+                                if (window.confirm("Are you sure you want to delete this product?")) {
+                                  dispatch({ type: "DELETE_PRODUCT", payload: listing.id })
+                                }
+                              }}
+                            >
                               <Trash2 className="h-3 w-3 text-red-600" />
                             </Button>
                           </div>

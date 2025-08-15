@@ -414,6 +414,28 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                         className="mt-1"
                       />
                     </div>
+                    <div>
+                      <Label htmlFor="category">Category</Label>
+                      <Select
+                        value={editForm.category}
+                        onValueChange={(value) => setEditForm({ ...editForm, category: value })}
+                      >
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="electronics">Electronics</SelectItem>
+                          <SelectItem value="vehicles">Vehicles</SelectItem>
+                          <SelectItem value="home-garden">Home & Garden</SelectItem>
+                          <SelectItem value="fashion">Fashion</SelectItem>
+                          <SelectItem value="gaming">Gaming</SelectItem>
+                          <SelectItem value="books">Books</SelectItem>
+                          <SelectItem value="sports">Sports</SelectItem>
+                          <SelectItem value="donate-giveaway">Donate/Giveaway</SelectItem>
+                          <SelectItem value="moving-out">Moving Out</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 ) : (
                   <div className="prose dark:prose-invert max-w-none">
@@ -507,7 +529,10 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                   <Badge variant="outline" className="mr-2">
                     {listing.condition}
                   </Badge>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  <Badge
+                    variant="outline"
+                    className="bg-green-50 text-green-700 border-green-200 dark:border-green-800"
+                  >
                     <Shield className="h-3 w-3 mr-1" />
                     Verified Seller
                   </Badge>
@@ -591,41 +616,43 @@ export default function ListingPage({ params }: { params: { id: string } }) {
             </Card>
 
             {/* Seller Info Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start space-x-4">
-                  <Avatar className="h-16 w-16">
-                    <AvatarImage src="/placeholder.svg" alt={listing.seller.name} />
-                    <AvatarFallback>{listing.seller.name.charAt(0)}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <h3 className="font-semibold text-lg">{listing.seller.name}</h3>
-                      {listing.seller.verified && (
-                        <Badge variant="secondary" className="ml-2 text-xs">
-                          ✓ Verified
-                        </Badge>
-                      )}
+            {!isOwner && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Seller Information</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-start space-x-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarImage src="/placeholder.svg" alt={listing.seller.name} />
+                      <AvatarFallback>{listing.seller.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <div className="flex items-center mb-2">
+                        <h3 className="font-semibold text-lg">{listing.seller.name}</h3>
+                        {listing.seller.verified && (
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            ✓ Verified
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center mb-2">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
+                        <span className="font-medium">{listing.seller.rating}</span>
+                        <span className="text-gray-500 ml-1">(127 reviews)</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Member since 2019</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Usually responds within 1 hour</p>
                     </div>
-                    <div className="flex items-center mb-2">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 mr-1" />
-                      <span className="font-medium">{listing.seller.rating}</span>
-                      <span className="text-gray-500 ml-1">(127 reviews)</span>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Member since 2019</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Usually responds within 1 hour</p>
                   </div>
-                </div>
-                <Link href={`/seller/${encodeURIComponent(listing.seller.name)}`}>
-                  <Button variant="outline" className="w-full mt-4 bg-transparent">
-                    View All Ads by This Seller
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
+                  <Link href={`/seller/${encodeURIComponent(listing.seller.name)}`}>
+                    <Button variant="outline" className="w-full mt-4 bg-transparent">
+                      View All Ads by This Seller
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
