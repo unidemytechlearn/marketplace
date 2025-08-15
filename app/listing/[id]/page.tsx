@@ -17,6 +17,10 @@ import {
   Eye,
   Flag,
   Phone,
+  Edit,
+  Trash2,
+  Save,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -24,6 +28,9 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useApp, type Product } from "@/store"
 import { useToast } from "@/hooks/use-toast"
 
@@ -35,6 +42,15 @@ export default function ListingPage({ params }: { params: { id: string } }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [isLiked, setIsLiked] = useState(false)
   const [message, setMessage] = useState("")
+  const [isEditing, setIsEditing] = useState(false)
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    price: 0,
+    category: "",
+    condition: "",
+    location: "",
+  })
 
   useEffect(() => {
     const productId = Number.parseInt(params.id)
@@ -47,8 +63,18 @@ export default function ListingPage({ params }: { params: { id: string } }) {
     if (product) {
       setListing(product)
       setIsLiked(state.wishlist.some((item) => item.id === product.id))
+      setEditForm({
+        title: product.title,
+        description: product.description || "",
+        price: product.price,
+        category: product.category,
+        condition: product.condition,
+        location: product.location,
+      })
     }
   }, [params.id, state.wishlist, state.products])
+
+  const isOwner = listing && state.user && state.user.name === listing.seller.name
 
   if (!listing) {
     return (
@@ -136,6 +162,49 @@ export default function ListingPage({ params }: { params: { id: string } }) {
     })
   }
 
+  const handleEdit = () => {
+    setIsEditing(true)
+  }
+
+  const handleSaveEdit = () => {
+    const updatedProduct = {
+      ...listing,
+      ...editForm,
+    }
+
+    dispatch({ type: "UPDATE_PRODUCT", payload: updatedProduct })
+    setListing(updatedProduct)
+    setIsEditing(false)
+
+    toast({
+      title: "Product updated",
+      description: "Your product has been updated successfully.",
+    })
+  }
+
+  const handleCancelEdit = () => {
+    setEditForm({
+      title: listing.title,
+      description: listing.description || "",
+      price: listing.price,
+      category: listing.category,
+      condition: listing.condition,
+      location: listing.location,
+    })
+    setIsEditing(false)
+  }
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this product? This action cannot be undone.")) {
+      dispatch({ type: "DELETE_PRODUCT", payload: listing.id })
+      toast({
+        title: "Product deleted",
+        description: "Your product has been deleted successfully.",
+      })
+      router.push("/dashboard")
+    }
+  }
+
   // Get special badge for product
   const getSpecialBadge = () => {
     if (listing.category === "donate-giveaway") {
@@ -190,6 +259,49 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                   {/* Special badges */}
                   <div className="absolute top-4 left-4">{getSpecialBadge()}</div>
 
+                  {isOwner && (
+                    <div className="absolute top-4 right-4 flex space-x-2">
+                      {isEditing ? (
+                        <>
+                          <Button
+                            size="sm"
+                            onClick={handleSaveEdit}
+                            className="rounded-full h-10 w-10 p-0 bg-green-600 hover:bg-green-700"
+                          >
+                            <Save className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={handleCancelEdit}
+                            className="rounded-full h-10 w-10 p-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={handleEdit}
+                            className="rounded-full h-10 w-10 p-0 bg-white/90 hover:bg-white"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={handleDelete}
+                            className="rounded-full h-10 w-10 p-0 bg-white/90 hover:bg-white text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   {/* Navigation Arrows */}
                   <Button
                     variant="secondary"
@@ -242,11 +354,74 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                 <CardTitle>Description</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="prose dark:prose-invert max-w-none">
-                  <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {listing.description}
-                  </p>
-                </div>
+                {isEditing ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="title">Title</Label>
+                      <Input
+                        id="title"
+                        value={editForm.title}
+                        onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        value={editForm.description}
+                        onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                        rows={6}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="price">Price (₹)</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          value={editForm.price}
+                          onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="condition">Condition</Label>
+                        <Select
+                          value={editForm.condition}
+                          onValueChange={(value) => setEditForm({ ...editForm, condition: value })}
+                        >
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Like New">Like New</SelectItem>
+                            <SelectItem value="Excellent">Excellent</SelectItem>
+                            <SelectItem value="Good">Good</SelectItem>
+                            <SelectItem value="Fair">Fair</SelectItem>
+                            <SelectItem value="Poor">Poor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="location">Location</Label>
+                      <Input
+                        id="location"
+                        value={editForm.location}
+                        onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="prose dark:prose-invert max-w-none">
+                    <p className="whitespace-pre-line text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {listing.description}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -289,17 +464,19 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                     </Badge>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{listing.title}</h1>
                   </div>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" onClick={handleAddToWishlist} className="p-2 bg-transparent">
-                      <Heart className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
-                    </Button>
-                    <Button variant="outline" size="sm" className="p-2 bg-transparent">
-                      <Share2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" className="p-2 bg-transparent">
-                      <Flag className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {!isOwner && (
+                    <div className="flex space-x-2">
+                      <Button variant="outline" size="sm" onClick={handleAddToWishlist} className="p-2 bg-transparent">
+                        <Heart className={`h-4 w-4 ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                      </Button>
+                      <Button variant="outline" size="sm" className="p-2 bg-transparent">
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" className="p-2 bg-transparent">
+                        <Flag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center mb-4">
@@ -358,47 +535,58 @@ export default function ListingPage({ params }: { params: { id: string } }) {
                   </div>
                 )}
 
-                <Separator className="my-6" />
+                {isOwner ? (
+                  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Your Product</h3>
+                    <p className="text-sm text-blue-600 dark:text-blue-300">
+                      This is your product listing. You can edit or delete it using the buttons above.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <Separator className="my-6" />
 
-                {/* Contact Buttons */}
-                <div className="space-y-3">
-                  <Button
-                    onClick={handleContactSeller}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    <MessageCircle className="h-5 w-5 mr-2" />
-                    {listing.category === "donate-giveaway" ? "Request Item" : "Chat with Seller"}
-                  </Button>
-                  <Button
-                    onClick={handleCallSeller}
-                    variant="outline"
-                    className="w-full bg-transparent hover:bg-green-50 hover:border-green-300"
-                  >
-                    <Phone className="h-5 w-5 mr-2" />
-                    Call Seller
-                  </Button>
-                </div>
+                    {/* Contact Buttons */}
+                    <div className="space-y-3">
+                      <Button
+                        onClick={handleContactSeller}
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        <MessageCircle className="h-5 w-5 mr-2" />
+                        {listing.category === "donate-giveaway" ? "Request Item" : "Chat with Seller"}
+                      </Button>
+                      <Button
+                        onClick={handleCallSeller}
+                        variant="outline"
+                        className="w-full bg-transparent hover:bg-green-50 hover:border-green-300"
+                      >
+                        <Phone className="h-5 w-5 mr-2" />
+                        Call Seller
+                      </Button>
+                    </div>
 
-                <Separator className="my-6" />
+                    <Separator className="my-6" />
 
-                {/* Quick Message */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">Send a Message</label>
-                  <Textarea
-                    placeholder={
-                      listing.category === "donate-giveaway"
-                        ? "Hi! I'm interested in this free item. Is it still available?"
-                        : "Hi! Is this item still available?"
-                    }
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    className="mb-3"
-                    rows={3}
-                  />
-                  <Button variant="outline" className="w-full bg-transparent" onClick={handleContactSeller}>
-                    Send Message
-                  </Button>
-                </div>
+                    {/* Quick Message */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Send a Message</label>
+                      <Textarea
+                        placeholder={
+                          listing.category === "donate-giveaway"
+                            ? "Hi! I'm interested in this free item. Is it still available?"
+                            : "Hi! Is this item still available?"
+                        }
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="mb-3"
+                        rows={3}
+                      />
+                      <Button variant="outline" className="w-full bg-transparent" onClick={handleContactSeller}>
+                        Send Message
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
 

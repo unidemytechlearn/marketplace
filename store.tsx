@@ -57,6 +57,8 @@ type AppAction =
   | { type: "MOVE_TO_CART"; payload: CartItem }
   | { type: "ADD_PRODUCT"; payload: Product }
   | { type: "SET_PRODUCTS"; payload: Product[] }
+  | { type: "UPDATE_PRODUCT"; payload: Product }
+  | { type: "DELETE_PRODUCT"; payload: number }
 
 const initialState: AppState = {
   user: null,
@@ -146,6 +148,20 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         products: action.payload,
+      }
+    case "UPDATE_PRODUCT":
+      console.log("[v0] Updating product:", action.payload.title)
+      return {
+        ...state,
+        products: state.products.map((product) => (product.id === action.payload.id ? action.payload : product)),
+      }
+    case "DELETE_PRODUCT":
+      console.log("[v0] Deleting product with ID:", action.payload)
+      return {
+        ...state,
+        products: state.products.filter((product) => product.id !== action.payload),
+        wishlist: state.wishlist.filter((item) => item.id !== action.payload),
+        cart: state.cart.filter((item) => item.id !== action.payload),
       }
     default:
       return state
