@@ -215,14 +215,14 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
                 <span className="text-white text-xs font-semibold">{product.seller.name.charAt(0)}</span>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                <div className="text-sm font-medium text-gray-900 dark:text-white">
                   {product.seller.name}
                   {product.seller.verified && (
                     <Badge variant="secondary" className="ml-1 text-xs">
                       ✓
                     </Badge>
                   )}
-                </p>
+                </div>
                 <div className="flex items-center">
                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400 mr-1" />
                   <span className="text-xs text-gray-500">{product.seller.rating}</span>
