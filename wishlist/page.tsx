@@ -199,7 +199,7 @@ export default function WishlistPage() {
                         <span className="text-white text-xs font-bold">{item.seller.name.charAt(0)}</span>
                       </div>
                       <div>
-                        <span className="text-sm font-semibold text-gray-800 dark:text-white">{item.seller.name}</span>
+                        <div className="text-sm font-semibold text-gray-800 dark:text-white">{item.seller.name}</div>
                         {item.seller.verified && (
                           <Badge
                             variant="secondary"
