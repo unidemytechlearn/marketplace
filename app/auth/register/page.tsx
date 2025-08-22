@@ -39,7 +39,7 @@ export default function RegisterPage() {
     // Validation
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       toast({
-        title: "Missing information",
+        title: "Missing information1",
         description: "Please fill in all fields.",
         variant: "destructive",
       })
